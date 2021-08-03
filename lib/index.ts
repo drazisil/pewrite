@@ -1,13 +1,13 @@
-import { PathLike, read } from "fs"
-import { FileHandle, open } from "fs/promises"
-import { promisify } from "util"
+import { PathLike } from "fs"
+import { FileHandle } from "fs/promises"
+import { open } from "fs/promises"
 
-const readPromise = promisify(read)
+
 
 class PEWrite {
     CHUNK_SIZE = 16384
-    _buffer: Buffer | undefined
-    _fd: FileHandle | undefined
+    _buffer = Buffer.alloc(this.CHUNK_SIZE)
+    _fileHandle: FileHandle | undefined
     _offset = 0
 
     constructor() {
@@ -17,21 +17,21 @@ class PEWrite {
     static async parse(filePath: PathLike): Promise<PEWrite | void> {
         const self = new PEWrite
 
-        self._fd = await open(filePath, 'r')
+        self._fileHandle = await open(filePath, 'r')
         .catch(err => {
             console.error(`Error opening ${filePath}: ${err}`)
             return undefined
         })
 
-        if(!self._fd) {
+        if(!self._fileHandle) {
             return console.error(`Unable to parse ${filePath}`)
         }
 
         console.log('Hi!')
 
-        const readResults = await 
+        const readResults = await self._fileHandle.read(self._buffer)
 
-        self._fd.close()
+        self._fileHandle.close()
 
         return self
     }
