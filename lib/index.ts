@@ -1,14 +1,29 @@
+import assert from "assert"
 import { PathLike } from "fs"
 import { FileHandle } from "fs/promises"
 import { open } from "fs/promises"
+
+class DosStub {
+    _buffer: Buffer
+    _peOffset: number
+
+    constructor(inputBuffer: Buffer) {
+        this._buffer = inputBuffer
+
+        this._peOffset = this._buffer.readInt16LE(0x3c)
+
+        console.info(`The PE offset is ${this._peOffset}`)
+    }
+}
 
 
 
 class PEWrite {
     CHUNK_SIZE = 16384
-    _buffer = Buffer.alloc(this.CHUNK_SIZE)
+    _buffer: Buffer | undefined
     _fileHandle: FileHandle | undefined
     _offset = 0
+    _dosStub: DosStub | undefined
 
     constructor() {
         
@@ -29,11 +44,26 @@ class PEWrite {
 
         console.log('Hi!')
 
-        const readResults = await self._fileHandle.read(self._buffer)
+        self._buffer = await self._fileHandle.readFile()
 
         self._fileHandle.close()
 
+        console.log(`Read ${self._buffer.byteLength} bytes`)
+
+        self._dosStub = new DosStub(self._buffer.slice(0, 0x3f))
+
+        const peSig = self._buffer.slice(self._dosStub._peOffset, self._dosStub._peOffset + 4)
+
+        if (!self.peSigValid(peSig)) {
+            return console.error(`${Buffer.from(peSig).toString('hex')} does not match!`)
+
+        }
+        
         return self
+    }
+
+    peSigValid(inputBytes: Buffer): boolean {
+        return inputBytes.toString('hex') === '50450000' // PE\n\n
     }
 }
 
