@@ -27,6 +27,6 @@ export class DosStub {
     }
   
     public get peOffset(): number {
-      return this.peOffset;
+      return this._peOffset;
     }
   }

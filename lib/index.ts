@@ -1,20 +1,27 @@
 import { PathLike } from "fs";
 import { FileHandle } from "fs/promises";
 import { open } from "fs/promises";
-import { DOS_STUB } from "./constants";
 import { DosStub } from "./dosStub";
-import { diffBuffer } from "./util";
 
-
+export interface CoffFileHeaderJson {
+  length: number,
+  machine: string | undefined
+}
 
 class CoffFileHeader {
   private _buffer: Buffer;
   private _isValid = false;
+  private _machine: number | undefined
+
   constructor(inputBuffer: Buffer) {
     this._buffer = inputBuffer;
-    if (this._buffer.byteLength === 20) {
-      this._isValid = true;
+    if (this._buffer.byteLength !== 20) {
+      return
     }
+
+    this._machine = this._buffer.readInt16LE(0)
+
+    this._isValid = true
   }
 
   public get length(): number {
@@ -23,6 +30,13 @@ class CoffFileHeader {
 
   public isValid(): boolean {
     return this._isValid;
+  }
+
+  public toJSON(): CoffFileHeaderJson {
+    return {
+      length: this._buffer.byteLength,
+      machine: (this._machine || 0).toString(16)
+    }
   }
 }
 
@@ -37,6 +51,8 @@ class PEWrite {
 
   public static async parse(filePath: PathLike): Promise<PEWrite | void> {
     const self = new PEWrite();
+
+    let cursor = 0
 
     self._fileHandle = await open(filePath, "r").catch((err) => {
       console.error(`Error opening ${filePath}: ${err}`);
@@ -55,13 +71,15 @@ class PEWrite {
 
     console.log(`Read ${self._buffer.byteLength} bytes`);
 
-    self._dosStub = new DosStub(self._buffer.slice(0, 0x40));
+    self._dosStub = new DosStub(self._buffer.slice(cursor, 0x40));
 
     self._dosStub.isValid();
 
+    cursor = self._dosStub.peOffset
+
     self._peSig = self._buffer.slice(
-      self._dosStub.peOffset,
-      self._dosStub.peOffset + 4
+      cursor,
+      cursor + 4
     );
 
     if (!self.peSigValid(self._peSig)) {
@@ -70,11 +88,16 @@ class PEWrite {
       );
     }
 
-    self._coffFileHeader = new CoffFileHeader(self._buffer.slice(64, 64 + 20));
+    cursor = cursor + 4
+
+    self._coffFileHeader = new CoffFileHeader(self._buffer.slice(cursor,
+      cursor + 20));
 
     if (!self._coffFileHeader.isValid()) {
       return console.error(`PE File Header is not valid!`);
     }
+
+    console.log(self._coffFileHeader.toJSON())
 
     return self;
   }
