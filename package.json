@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc --build",
     "lint": "eslint index.ts, lib/*, test/* --ext .ts",
-    "start": "ts-node index.ts",
+    "start": "npm run build && node --trace-warnings dist/index.js",
     "test": "tap"
   },
   "repository": {

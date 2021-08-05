@@ -2,31 +2,40 @@ import { PathLike } from "fs";
 import { FileHandle } from "fs/promises";
 import { open } from "fs/promises";
 import { DOS_STUB } from "./constants";
+import { DosStub } from "./dosStub";
 import { diffBuffer } from "./util";
 
-class DosStub {
-  _buffer: Buffer;
-  _peOffset: number;
 
+
+class CoffFileHeader {
+  private _buffer: Buffer;
+  private _isValid = false;
   constructor(inputBuffer: Buffer) {
     this._buffer = inputBuffer;
+    if (this._buffer.byteLength === 20) {
+      this._isValid = true;
+    }
+  }
 
-    this._peOffset = this._buffer.readInt16LE(0x3c);
+  public get length(): number {
+    return this._buffer.length;
+  }
 
-    console.info(`The PE offset is ${this._peOffset}`);
+  public isValid(): boolean {
+    return this._isValid;
   }
 }
 
 class PEWrite {
-  CHUNK_SIZE = 16384;
-  _buffer: Buffer | undefined;
-  _fileHandle: FileHandle | undefined;
-  _offset = 0;
-  _dosStub: DosStub | undefined;
+  private _buffer: Buffer | undefined;
+  private _fileHandle: FileHandle | undefined;
+  private _dosStub: DosStub | undefined;
+  private _peSig: Buffer | undefined;
+  private _coffFileHeader: CoffFileHeader | undefined;
 
   constructor() {}
 
-  static async parse(filePath: PathLike): Promise<PEWrite | void> {
+  public static async parse(filePath: PathLike): Promise<PEWrite | void> {
     const self = new PEWrite();
 
     self._fileHandle = await open(filePath, "r").catch((err) => {
@@ -48,27 +57,29 @@ class PEWrite {
 
     self._dosStub = new DosStub(self._buffer.slice(0, 0x40));
 
-    if (!self._dosStub._buffer.equals(DOS_STUB)) {
+    self._dosStub.isValid();
+
+    self._peSig = self._buffer.slice(
+      self._dosStub.peOffset,
+      self._dosStub.peOffset + 4
+    );
+
+    if (!self.peSigValid(self._peSig)) {
       return console.error(
-        `DOS stub does not match!: ${diffBuffer(self._dosStub._buffer, DOS_STUB)}`
+        `${Buffer.from(self._peSig).toString("hex")} does not match!`
       );
     }
 
-    const peSig = self._buffer.slice(
-      self._dosStub._peOffset,
-      self._dosStub._peOffset + 4
-    );
+    self._coffFileHeader = new CoffFileHeader(self._buffer.slice(64, 64 + 20));
 
-    if (!self.peSigValid(peSig)) {
-      return console.error(
-        `${Buffer.from(peSig).toString("hex")} does not match!`
-      );
+    if (!self._coffFileHeader.isValid()) {
+      return console.error(`PE File Header is not valid!`);
     }
 
     return self;
   }
 
-  peSigValid(inputBytes: Buffer): boolean {
+  public peSigValid(inputBytes: Buffer): boolean {
     return inputBytes.toString("hex") === "50450000"; // PE\n\n
   }
 }
