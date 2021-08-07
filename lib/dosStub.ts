@@ -13,13 +13,13 @@ export class DosStub {
   
       console.info(`The PE offset is ${this._peOffset}`);
   
-      if (!this._buffer.equals(DOS_STUB)) {
-        console.error(
-          `DOS stub does not match!: ${diffBuffer(this._buffer, DOS_STUB)}`
-        );
-      } else {
+      // if (!this._buffer.equals(DOS_STUB)) {
+      //   console.error(
+      //     `DOS stub does not match!: ${diffBuffer(this._buffer, DOS_STUB)}`
+      //   );
+      // } else {
         this._isValid = true;
-      }
+      // }
     }
   
     public isValid(): boolean {

@@ -20,7 +20,7 @@ export interface CoffFileHeaderJson {
     private _pointerToSymbolTable: number | undefined
     private _numberOfSymbols: number | undefined
     // https://docs.microsoft.com/en-us/windows/win32/debug/pe-format#optional-header-image-only
-    private _sizeOfOptionalHeader: number | undefined
+    private _sizeOfOptionalHeader = 0
     // https://docs.microsoft.com/en-us/windows/win32/debug/pe-format#characteristics
     private _characteristics: number | undefined
   
@@ -53,6 +53,10 @@ export interface CoffFileHeaderJson {
   
     public isValid(): boolean {
       return this._isValid;
+    }
+
+    public get sizeOfOptionalHeader(): number {
+      return this._sizeOfOptionalHeader
     }
   
     public toJSON(): CoffFileHeaderJson {

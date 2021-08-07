@@ -1,3 +1,8 @@
-import { parse } from './lib/index'
+import { parse } from "./lib/index";
 
-parse('./testFiles/hh6d.golden.exe')
+async function main() {
+  await parse("./testFiles/hh6d.golden.exe");
+  await parse("./testFiles/unpnp.exe-mz.exe");
+}
+
+Promise.all([main()]);

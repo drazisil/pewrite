@@ -2,8 +2,8 @@ import { PathLike } from "fs";
 import { FileHandle } from "fs/promises";
 import { open } from "fs/promises";
 import { DosStub } from "./dosStub";
-import { CoffFileHeader, CoffFileHeaderJson, } from './coffFileHeader'
-
+import { CoffFileHeader } from "./coffFileHeader";
+import { CoffOptionalHeader } from "./optionalHeader";
 
 class PEWrite {
   private _buffer: Buffer | undefined;
@@ -11,13 +11,14 @@ class PEWrite {
   private _dosStub: DosStub | undefined;
   private _peSig: Buffer | undefined;
   private _coffFileHeader: CoffFileHeader | undefined;
+  private _coffOptionalHeader: CoffOptionalHeader | undefined;
 
   constructor() {}
 
   public static async parse(filePath: PathLike): Promise<PEWrite | void> {
     const self = new PEWrite();
 
-    let cursor = 0
+    let cursor = 0;
 
     self._fileHandle = await open(filePath, "r").catch((err) => {
       console.error(`Error opening ${filePath}: ${err}`);
@@ -40,12 +41,11 @@ class PEWrite {
 
     self._dosStub.isValid();
 
-    cursor = self._dosStub.peOffset
+    cursor = self._dosStub.peOffset;
 
-    self._peSig = self._buffer.slice(
-      cursor,
-      cursor + 4
-    );
+    console.log(`Starting from ${cursor}`)
+
+    self._peSig = self._buffer.slice(cursor, cursor + 4);
 
     if (!self.peSigValid(self._peSig)) {
       return console.error(
@@ -53,17 +53,31 @@ class PEWrite {
       );
     }
 
-    cursor = cursor + 4
+    cursor = cursor + 4;
 
-    self._coffFileHeader = new CoffFileHeader(self._buffer.slice(cursor,
-      cursor + 20));
+    self._coffFileHeader = new CoffFileHeader(
+      self._buffer.slice(cursor, cursor + 20)
+    );
 
     if (!self._coffFileHeader.isValid()) {
       return console.error(`PE File Header is not valid!`);
     }
 
-    console.log(self._coffFileHeader.toJSON())
+    if (self._coffFileHeader.sizeOfOptionalHeader === 0) {
+      return console.error(`PE Optional header not found!`);
+    }
 
+    self._coffOptionalHeader = new CoffOptionalHeader(
+      self._buffer.slice(
+        cursor,
+        cursor + self._coffFileHeader.sizeOfOptionalHeader
+      ),
+      self._coffFileHeader.sizeOfOptionalHeader
+    );
+
+    console.log(self._coffFileHeader.toJSON());
+
+    console.log(`========`)
     return self;
   }
 
