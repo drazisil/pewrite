@@ -1,9 +1,9 @@
 import { PathLike } from "fs";
 import { FileHandle } from "fs/promises";
 import { open } from "fs/promises";
-import { DosStub } from "./dosStub";
-import { CoffFileHeader } from "./coffFileHeader";
-import { CoffOptionalHeader } from "./optionalHeader";
+import { DosStub } from "./dosStub.js";
+import { CoffFileHeader } from "./coffFileHeader.js";
+import { CoffOptionalHeader } from "./optionalHeader.js";
 
 class PEWrite {
   private _buffer: Buffer | undefined;
@@ -12,8 +12,6 @@ class PEWrite {
   private _peSig: Buffer | undefined;
   private _coffFileHeader: CoffFileHeader | undefined;
   private _coffOptionalHeader: CoffOptionalHeader | undefined;
-
-  constructor() {}
 
   public static async parse(filePath: PathLike): Promise<PEWrite | void> {
     const self = new PEWrite();
