@@ -1,8 +1,12 @@
 import { parse } from "./lib/index";
 
 async function main() {
-  await parse("./testFiles/hh6d.golden.exe");
-  await parse("./testFiles/unpnp.exe-mz.exe");
+  if (!process.argv[2]) {
+    console.error('Please supply a file path')
+    process.exitCode = -1
+    return
+  }
+  await parse(process.argv[2]);
 }
 
 Promise.all([main()]);
