@@ -35,6 +35,5 @@ jobs:
       uses: codecov/codecov-action@v2.0.3
       with:
         flags: ${{ matrix.node-version }}
-        fail_ci_if_error: true
         name: ${{ matrix.node-version }}
         verbose: true
