@@ -1,3 +1,3 @@
 const t = require('tap')
 
-t.ok()
+t.ok(true)
