@@ -1,12 +1,12 @@
 {
   "extends": [
     "config:base",
-    "packageRules": [
-      {
-        "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-        "groupName": "dependencies (non-major)",
-        "automerge": true
-      }    
-    ]
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "dependencies (non-major)",
+      "automerge": true
+    }    
   ]
 }
