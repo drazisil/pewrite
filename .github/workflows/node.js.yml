@@ -32,7 +32,7 @@ jobs:
     - run: npm run build --if-present
     - run: npm test
     - name: Codecov
-      uses: codecov/codecov-action@v3.0.0
+      uses: codecov/codecov-action@v3.1.0
       with:
         flags: ${{ matrix.node-version }}
         name: ${{ matrix.node-version }}
