@@ -33,7 +33,7 @@
     "@typescript-eslint/parser": "5.61.0",
     "eslint": "8.44.0",
     "eslint-config-prettier": "8.8.0",
-    "prettier": "2.8.8",
+    "prettier": "3.0.0",
     "tap": "16.3.7",
     "typescript": "5.1.6"
   },
