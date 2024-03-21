@@ -27,7 +27,7 @@
   "homepage": "https://github.com/drazisil/pewrite#readme",
   "devDependencies": {
     "@types/eslint": "8.56.6",
-    "@types/node": "20.11.28",
+    "@types/node": "20.11.30",
     "@types/tap": "15.0.11",
     "@typescript-eslint/eslint-plugin": "7.3.1",
     "@typescript-eslint/parser": "7.3.1",
