@@ -34,7 +34,7 @@
     "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
     "prettier": "3.3.2",
-    "tap": "16.3.10",
+    "tap": "20.0.1",
     "typescript": "5.5.2"
   },
   "dependencies": {
